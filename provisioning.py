@@ -5,7 +5,7 @@ from ldap3 import Server, Connection, ALL, SIMPLE, MODIFY_ADD, Tls
 import ssl
 
 # Configuration
-AD_SERVER = "localhost"
+AD_SERVER = "127.0.0.1"
 AD_PORT = 636
 AD_USER = "CN=Administrator,CN=Users,DC=iam,DC=lab"
 AD_PASSWORD = "Admin1234!"
@@ -21,10 +21,11 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
-
 def connect_ad():
     tls = Tls(
-        validate=ssl.CERT_NONE
+        ca_certs_file="/home/seed/iam-lab/projet2-pki/certs/fullchain.crt",
+        validate=ssl.CERT_REQUIRED,
+        version=ssl.PROTOCOL_TLSv1_2
     )
     server = Server(AD_SERVER, port=AD_PORT, use_ssl=True, tls=tls, get_info=ALL)
     conn = Connection(
@@ -34,8 +35,8 @@ def connect_ad():
         authentication=SIMPLE,
         auto_bind=True
     )
-    logging.info("Connexion LDAPS établie")
-    print("[OK] Connexion LDAPS établie")
+    logging.info("Connexion LDAPS établie avec certificat vérifié")
+    print("[OK] Connexion LDAPS établie avec certificat vérifié")
     return conn
 
 def create_user(conn, firstname, lastname, email, role):
